@@ -18,7 +18,7 @@ public class CaseController {
     @Autowired
     private CaseService caseService;
 
-    @PostMapping() // Можно использовать более короткий адрес
+    @PostMapping()
     public ResponseEntity<?> addCase(@RequestBody CaseCreateRequestDto caseDto) { // 1. Принимаем DTO
         try {
             Case createdCase = caseService.addCase(caseDto); // 2. Передаём DTO в сервис
@@ -38,7 +38,7 @@ public class CaseController {
         }
     }
 
-    @GetMapping // Это GET-запрос по адресу /api/cases
+    @GetMapping
     public List<CaseDto> getAllCases() {
         return caseService.getAllCases();
     }

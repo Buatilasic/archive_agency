@@ -23,8 +23,7 @@ public class CaseService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
-        // Проверяем, существует ли уже дело с таким названием у этого пользователя
-        if (caseRepository.findByCasename(caseDto.getCasename()).isPresent()) {
+        if (caseRepository.findByCasenameAndCaseowner(caseDto.getCasename()).isPresent()) {
             throw new IllegalStateException("Дело с таким названием у вас уже есть!");
         }
 

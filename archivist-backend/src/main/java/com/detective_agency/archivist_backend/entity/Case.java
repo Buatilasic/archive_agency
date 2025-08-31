@@ -20,7 +20,7 @@ public class Case {
     @Column(name = "description")
     private String casedescription;
 
-    @ManyToOne(fetch = FetchType.LAZY) // Указываем, что много "дел" могут принадлежать одному "пользователю"
-    @JoinColumn(name = "owner_id", nullable = false) // Указываем, что в таблице 'cases' будет колонка 'owner_id', которая ссылается на ID пользователя
-    private User caseowner; // Тип поля - сама сущность User, а не String
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User caseowner;
 }

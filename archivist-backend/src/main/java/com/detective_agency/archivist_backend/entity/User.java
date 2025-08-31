@@ -31,13 +31,11 @@ public class User implements UserDetails { // <-- Реализуем интер�
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Пока мы не используем роли, возвращаем пустой список
         return null;
     }
 
     @Override
     public String getPassword() {
-        // Возвращаем наш хеш пароля
         return this.passwordHash;
     }
 
@@ -46,8 +44,6 @@ public class User implements UserDetails { // <-- Реализуем интер�
         return this.username;
     }
 
-    // Далее методы для управления состоянием аккаунта.
-    // Пока оставляем их "заглушками", возвращающими true.
     @Override
     public boolean isAccountNonExpired() {
         return true;

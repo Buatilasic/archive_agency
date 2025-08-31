@@ -14,11 +14,9 @@ import java.util.List;
 @RequestMapping("/api/users") // Общий "адрес" для всех методов, связанных с пользователями
 public class UserController {
 
-    // 1. Вызываем нашего оперативника - UserService
     @Autowired
     private UserService userService;
 
-    // 2. Указываем, что это POST-запрос по адресу /api/users/register
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
@@ -39,11 +37,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
-    // В классе UserController
 
-    @GetMapping // Это GET-запрос по адресу /api/users
+    @GetMapping
     public List<UserDto> getAllUsers() {
-        // Вызываем метод сервиса, который мы только что создали
         return userService.getAllUsers();
     }
 }
