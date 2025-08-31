@@ -20,17 +20,14 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public User registerUser(User user) {
-        // Правильно: проверяем, есть ли что-то ВНУТРИ Optional
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalStateException("Этот логин уже занят!");
         }
 
-        // То же самое для email
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalStateException("Этот адрес электронной почты уже используется!");
         }
 
-        // Этот код остаётся без изменений
         String encodedPassword = passwordEncoder.encode(user.getPasswordHash());
         user.setPasswordHash(encodedPassword);
 
@@ -38,9 +35,8 @@ public class UserService {
     }
 
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll() // Получаем список всех объектов User
-                .stream() // Превращаем в поток для удобной обработки
-                // Для каждого объекта User создаём новый объект UserDto
+        return userRepository.findAll()
+                .stream()
                 .map(user -> new UserDto(user.getId(), user.getUsername(), user.getEmail()))
                 // Собираем всё обратно в список
                 .collect(Collectors.toList());

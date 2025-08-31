@@ -12,5 +12,5 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
 
     List<Case> findByCaseowner(User caseowner);
 
-    Optional<Case> findByCasename(String casename);
+    Optional<Case> findByCasenameAndCaseowner(String casename);
 }
