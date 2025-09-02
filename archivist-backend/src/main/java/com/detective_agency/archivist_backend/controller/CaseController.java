@@ -38,6 +38,43 @@ public class CaseController {
         }
     }
 
+    @PatchMapping("/{caseId}")
+    public ResponseEntity<?> updateCase(@PathVariable long caseId, @RequestBody CaseCreateRequestDto caseDto) {
+        try {
+            Case updatedCase = caseService.updateCase(caseId, caseDto);
+
+            CaseDto responseDto = new CaseDto(
+                    updatedCase.getId(),
+                    updatedCase.getCasename(),
+                    updatedCase.getCasedescription(),
+                    updatedCase.getCaseowner().getUsername()
+            );
+
+            return ResponseEntity.ok(responseDto);
+
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+
+    }
+
+    @DeleteMapping("/{caseId}")
+    public ResponseEntity<?> deleteCase(@PathVariable long caseId) {
+        try {
+            caseService.deleteCase(caseId);
+            return ResponseEntity.noContent().build();
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
     @GetMapping
     public List<CaseDto> getAllCases() {
         return caseService.getAllCases();

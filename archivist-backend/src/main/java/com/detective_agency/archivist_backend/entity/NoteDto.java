@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NoteDto {
     private long id;
-    private String notename;
+    private String title;
     private String description;
     private NoteType type;
     private String caseCasename;
