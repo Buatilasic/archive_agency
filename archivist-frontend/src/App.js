@@ -1,22 +1,32 @@
-import logo from './logo.svg';
+// src/App.js
+
+import React from 'react';
+import { useAuth } from './context/AuthContext';
+import LoginForm from './components/LoginForm';
+import RegistrationForm from './components/RegistrationForm';
 import './App.css';
 
 function App() {
+  const { currentUser, logout } = useAuth();
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Архив Детективного Агентства</h1>
+        
+        {currentUser ? (
+          // Если агент вошёл в систему
+          <div>
+            <p>Добро пожаловать, агент {currentUser.username}!</p>
+            <button onClick={logout}>Выйти</button>
+          </div>
+        ) : (
+          <div>
+            <LoginForm />
+            <hr />
+            <RegistrationForm />
+          </div>
+        )}
       </header>
     </div>
   );
