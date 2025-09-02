@@ -15,33 +15,43 @@ import java.util.stream.Collectors;
 
 import static com.detective_agency.archivist_backend.utils.SecurityUtils.getCurrentUser;
 
+// это наш главный сервис для работы с делами в архиве.
 @Service("cs")
 public class CaseService {
 
+    // подключаемся к самому архиву.
     @Autowired
     private CaseRepository caseRepository;
 
-    public Case addCase(CaseCreateRequestDto caseDto) { // <-- Принимаем DTO
+    // метод для заведения нового дела.
+    public Case addCase(CaseCreateRequestDto caseDto) {
+        // сначала выясняем, кто ведёт расследование.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
+        // проверяем, нет ли у этого следователя уже дела с таким же "позывным".
         if (caseRepository.findByCasenameAndCaseowner(caseDto.getCasename(), currentUser).isPresent()) {
-            throw new IllegalStateException("Дело с таким названием у вас уже есть!");
+            throw new IllegalStateException("дело с таким названием у вас уже есть!");
         }
 
-        // Создаём новую сущность Case и наполняем её данными
+        // создаём новую папку для дела и заполняем её данными из запроса.
         Case newCase = new Case();
         newCase.setCasename(caseDto.getCasename());
         newCase.setCasedescription(caseDto.getCasedescription());
-        newCase.setCaseowner(currentUser); // <-- Назначаем владельца сами!
+        // и, конечно, указываем, что владелец дела - текущий следователь.
+        newCase.setCaseowner(currentUser);
 
+        // отправляем дело в архив на хранение.
         return caseRepository.save(newCase);
     }
 
+    // достаём из архива все дела, которые ведёт текущий следователь.
     public List<CaseDto> getAllCases() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
+        // запрашиваем у архива все папки, помеченные его именем,
+        // а затем преобразуем "сырые" данные в удобные карточки (dto).
         return caseRepository.findByCaseowner(currentUser)
                 .stream()
                 .map(aCase -> new CaseDto(
@@ -53,43 +63,48 @@ public class CaseService {
                 .collect(Collectors.toList());
     }
 
-    // Метод для частичного обновления "Дела"
+    // здесь мы вносим правки в уже существующее дело.
     public Case updateCase(long caseId, CaseCreateRequestDto updateDto) {
-        // 1. Получаем текущего пользователя
+        // узнаём, кто пытается внести изменения.
         User currentUser = getCurrentUser();
 
-        // 2. Находим дело в архиве по его ID
+        // находим нужное дело в архиве по его номеру.
         Case existingCase = caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Дело с id " + caseId + " не найдено!"));
+                .orElseThrow(() -> new RuntimeException("дело с id " + caseId + " не найдено!"));
 
-        // 3. Проверяем владение - это обязательно!
+        // ключевая проверка: удостоверяемся, что это его дело, а не чужое.
         if (!existingCase.getCaseowner().equals(currentUser)) {
-            throw new SecurityException("Доступ запрещён: вы не являетесь владельцем этого дела.");
+            throw new SecurityException("доступ запрещён: вы не являетесь владельцем этого дела.");
         }
 
-        // Частично обновляем поля, если они пришли в DTO
-        // Проверяем, что новое имя не пустое и не состоит из пробелов
+        // если поступила новая информация (имя или описание), обновляем досье.
         if (updateDto.getCasename() != null && !updateDto.getCasename().isBlank()) {
             existingCase.setCasename(updateDto.getCasename());
         }
 
-        // Описание может быть и пустым, поэтому просто проверяем на null
         if (updateDto.getCasedescription() != null) {
             existingCase.setCasedescription(updateDto.getCasedescription());
         }
 
-        // 5. Сохраняем обновлённое дело в архив. Метод save() используется и для создания, и для обновления.
+        // сохраняем обновлённое дело обратно в архив.
         return caseRepository.save(existingCase);
     }
+
+    // метод для отправки дела в шредер.
     public void deleteCase(long caseId) {
+        // как всегда, сначала протокол: кто удаляет?
         User currentUser = getCurrentUser();
 
+        // находим папку, которую нужно уничтожить.
         Case existingCase = caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Дело с id " + caseId + " не найдено!"));
+                .orElseThrow(() -> new RuntimeException("дело с id " + caseId + " не найдено!"));
 
+        // и снова проверка безопасности. мы же не можем позволить кому-то удалять чужие улики.
         if (!existingCase.getCaseowner().equals(currentUser)) {
-            throw new SecurityException("Доступ запрещён: вы не являетесь владельцем этого дела.");
+            throw new SecurityException("доступ запрещён: вы не являетесь владельцем этого дела.");
         }
+
+        // всё чисто. удаляем.
         caseRepository.deleteById(caseId);
     }
 }

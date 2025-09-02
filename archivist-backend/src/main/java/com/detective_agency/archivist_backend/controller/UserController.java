@@ -11,35 +11,41 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users") // Общий "адрес" для всех методов, связанных с пользователями
+// диспетчер, отвечающий за работу с личными делами агентов (пользователями).
+@RequestMapping("/api/users")
 public class UserController {
 
+    // подключаем сервис, который непосредственно работает с базой агентов.
     @Autowired
     private UserService userService;
 
+    // обрабатывает post-запрос на регистрацию нового агента.
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
             User createdUser = userService.registerUser(user);
 
-            // --- Вот исправление ---
-            // 1. Создаём DTO из полученной сущности
+            // важный момент: в ответ отправляем не всю сущность user, а только безопасный dto.
+            // это чтобы случайно не "засветить" хэш пароля.
             UserDto responseDto = new UserDto(
                     createdUser.getId(),
                     createdUser.getUsername(),
                     createdUser.getEmail()
             );
 
-            // 2. Отправляем в ответе безопасный DTO
+            // возвращаем статус 'создано' и данные нового агента.
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
 
         } catch (IllegalStateException e) {
+            // если логин или почта заняты, сервис бросит ошибку, а мы сообщим о конфликте.
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
+    // get-запрос для получения списка всех зарегистрированных агентов.
     @GetMapping
     public List<UserDto> getAllUsers() {
+        // сервис сразу возвращает список в виде dto, так что просто передаём его дальше.
         return userService.getAllUsers();
     }
 }
