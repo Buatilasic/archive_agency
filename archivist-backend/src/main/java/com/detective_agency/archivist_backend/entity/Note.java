@@ -28,5 +28,5 @@ public class Note {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", nullable = false)
-    private Case ACase;
+    private Case parentCase;
 }

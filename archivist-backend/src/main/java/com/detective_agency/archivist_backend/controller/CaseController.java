@@ -1,9 +1,13 @@
 package com.detective_agency.archivist_backend.controller;
 
 import com.detective_agency.archivist_backend.dto.CaseCreateRequestDto;
+import com.detective_agency.archivist_backend.dto.NoteCreateRequestDto;
 import com.detective_agency.archivist_backend.entity.CaseDto;
 import com.detective_agency.archivist_backend.entity.Case;
+import com.detective_agency.archivist_backend.entity.Note;
+import com.detective_agency.archivist_backend.entity.NoteDto;
 import com.detective_agency.archivist_backend.service.CaseService;
+import com.detective_agency.archivist_backend.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,9 @@ public class CaseController {
     // подключаем сервис, который будет выполнять основную работу.
     @Autowired
     private CaseService caseService;
+
+    @Autowired
+    private NoteService noteService;
 
     // принимает post-запрос на создание нового дела.
     @PostMapping()
@@ -89,5 +96,34 @@ public class CaseController {
     public List<CaseDto> getAllCases() {
         // просто передаём запрос в сервис и возвращаем то, что он найдёт.
         return caseService.getAllCases();
+    }
+
+    // post-запрос на добавление заметок
+    @PostMapping("/{caseId}/notes")
+    public ResponseEntity<?> createNoteForCase(@PathVariable long caseId, @RequestBody NoteCreateRequestDto noteDto) {
+        try {
+            Note createdNote = noteService.createNoteForCase(caseId, noteDto);
+            NoteDto responseDto = new NoteDto(
+                    createdNote.getId(),
+                    createdNote.getTitle(),
+                    createdNote.getDescription(),
+                    createdNote.getType(),
+                    createdNote.getParentCase().getCasename()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // get-запрос на получение всех заметок по делу
+    @GetMapping("/{caseId}/notes")
+    public ResponseEntity<?> getNotesForCase(@PathVariable long caseId) {
+        try {
+            List<NoteDto> notes = noteService.getNotesForCase(caseId);
+            return ResponseEntity.ok(notes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

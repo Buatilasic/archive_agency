@@ -8,8 +8,6 @@ import com.detective_agency.archivist_backend.entity.User;
 import com.detective_agency.archivist_backend.repository.CaseRepository;
 import com.detective_agency.archivist_backend.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +47,7 @@ public class NoteService {
         newNote.setDescription(noteDto.getDescription());
         newNote.setType(noteDto.getType());
         // устанавливаем связь с родительским делом.
-        newNote.setACase(aCase);
+        newNote.setParentCase(aCase);
 
         // сохраняем заметку в базу.
         return noteRepository.save(newNote);
@@ -68,14 +66,28 @@ public class NoteService {
         }
 
         // находим все заметки, связанные с этим делом, и преобразуем их в dto.
-        return noteRepository.findByACase(aCase)
+        return noteRepository.findByParentCase(aCase)
                 .stream()
                 .map(note -> new NoteDto(
                         note.getId(),
                         note.getTitle(),
                         note.getDescription(),
                         note.getType(),
-                        note.getACase().getCasename()
+                        note.getParentCase().getCasename()
+                ))
+                .collect(Collectors.toList());
+    }
+    public List<NoteDto> getAllNotesForCurrentUser() {
+        User currentUser = getCurrentUser();
+
+        return noteRepository.findAllByUser(currentUser)
+                .stream()
+                .map(note -> new NoteDto(
+                        note.getId(),
+                        note.getTitle(),
+                        note.getDescription(),
+                        note.getType(),
+                        note.getParentCase().getCasename()
                 ))
                 .collect(Collectors.toList());
     }
