@@ -17,7 +17,6 @@ public class Note {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 

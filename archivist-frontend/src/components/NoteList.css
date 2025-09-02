@@ -1,0 +1,87 @@
+/* Контейнер для всех карточек */
+.note-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+
+/* Стили для отдельной карточки */
+.note-card {
+  background-color: #2d3748;
+  border: 1px solid #4a5568;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  max-height: 450px;
+  padding: 20px;
+}
+
+.note-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для прокручиваемого контента */
+.card-content {
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Стили для содержимого внутри карточки */
+.note-card h3 {
+  margin-top: 0;
+  color: #e2e8f0;
+}
+
+.note-card small {
+  display: block;
+  margin-bottom: 12px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* ИЗМЕНЕНИЕ: Уменьшаем шрифт и межстрочный интервал основного текста */
+.note-card p,
+.note-card ul,
+.note-card ol {
+  color: #cbd5e0;
+  line-height: 1.5; /* Немного уменьшили для компактности */
+  font-size: 14px;  /* Уменьшили основной шрифт */
+}
+
+/* НОВОЕ: Стили для "подвала" карточки */
+.note-footer {
+  margin-top: auto; /* Главный трюк: прижимает этот блок к самому низу карточки */
+  padding-top: 16px; /* Отступ от контента сверху */
+}
+
+/* НОВОЕ: Стили для бейджа с типом заметки */
+.note-type-badge {
+  display: inline-block;
+  background-color: #4a5568;
+  color: #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 12px; /* Делаем его более округлым */
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase; /* Все буквы заглавные */
+  letter-spacing: 0.5px; /* Небольшое расстояние между буквами */
+}
+
+/* Кастомный скроллбар под темную тему */
+.card-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-content::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+  border-radius: 20px;
+  border: 3px solid #2d3748;
+}

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor // Создаст конструктор для поля message
+@AllArgsConstructor
 public class ErrorResponseDto {
     private String message;
 }
