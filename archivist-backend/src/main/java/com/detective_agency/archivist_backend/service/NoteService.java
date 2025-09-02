@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.detective_agency.archivist_backend.utils.SecurityUtils.getCurrentUser;
+
 @Service("ns")
 public class NoteService {
 
@@ -69,13 +71,5 @@ public class NoteService {
                         note.getACase().getCasename()
                 ))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Вспомогательный метод для получения текущего пользователя.
-     */
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (User) authentication.getPrincipal();
     }
 }
