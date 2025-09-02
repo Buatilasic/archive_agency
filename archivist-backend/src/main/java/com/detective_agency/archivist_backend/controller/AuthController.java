@@ -1,16 +1,22 @@
 package com.detective_agency.archivist_backend.controller;
 
+import com.detective_agency.archivist_backend.dto.ErrorResponseDto;
 import com.detective_agency.archivist_backend.dto.LoginRequestDto;
 import com.detective_agency.archivist_backend.entity.UserDto;
 import com.detective_agency.archivist_backend.entity.User;
 import com.detective_agency.archivist_backend.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,21 +40,33 @@ public class AuthController {
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            ErrorResponseDto errorResponse = new ErrorResponseDto(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequestDto loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequestDto loginRequest, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Помещаем аутентификацию в SecurityContext
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        User user = (User) authentication.getPrincipal();
-        UserDto responseDto = new UserDto(user.getId(), user.getUsername(), user.getEmail());
+            // --- ЯВНЫЙ ПРИКАЗ СОХРАНИТЬ КОНТЕКСТ В СЕССИЮ (Решение со Stack Overflow) ---
+            SecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
+            contextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
+            // ----------------------------------------------------------------------
 
-        return ResponseEntity.ok(responseDto);
+            User user = (User) authentication.getPrincipal();
+            UserDto responseDto = new UserDto(user.getId(), user.getUsername(), user.getEmail());
+
+            return ResponseEntity.ok(responseDto);
+        } catch (BadCredentialsException e) {
+            ErrorResponseDto errorResponse = new ErrorResponseDto("Неверный логин или пароль");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
     }
 }

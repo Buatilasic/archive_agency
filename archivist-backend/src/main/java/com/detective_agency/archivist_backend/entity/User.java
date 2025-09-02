@@ -4,33 +4,36 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails; // <-- Импортируем
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "users")
-public class User implements UserDetails { // <-- Реализуем интерфейс
+@Table(name = "users") // Явно указываем имя таблицы для надёжности
+public class User implements UserDetails { // <-- ГЛАВНАЯ ПРАВКА
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // IDENTITY - лучший выбор для Postgres
     private long id;
 
-    @Column(name="Username", length=25, nullable=false, unique=true)
+    @Column(name = "username", length = 25, nullable = false, unique = true)
     private String username;
 
-    @Column(name="Email", nullable=false, unique=true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name="Password", length = 64, nullable=false)
+    @Column(name = "password", length = 64, nullable = false)
     private String passwordHash;
 
+    // --- МЕТОДЫ, КОТОРЫЕ ТРЕБУЕТ UserDetails ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        // Мы пока не используем роли, поэтому возвращаем пустой список.
+        return List.of();
     }
 
     @Override
@@ -38,28 +41,13 @@ public class User implements UserDetails { // <-- Реализуем интер�
         return this.passwordHash;
     }
 
+    // Эти методы пока просто возвращают true.
     @Override
-    public String getUsername() {
-        return this.username;
-    }
-
+    public boolean isAccountNonExpired() { return true; }
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
+    public boolean isAccountNonLocked() { return true; }
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
+    public boolean isCredentialsNonExpired() { return true; }
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    public boolean isEnabled() { return true; }
 }
