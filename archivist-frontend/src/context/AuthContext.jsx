@@ -1,36 +1,47 @@
-
 import React, { createContext, useState, useContext } from 'react';
 import axios from 'axios';
 
+// создаём 'служебный канал' (контекст) для передачи данных об аутентификации.
 const AuthContext = createContext(null);
 
+// это наш компонент-провайдер. он будет 'транслировать' по каналу, кто сейчас в системе.
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+    // здесь мы храним 'личное дело' (данные) текущего агента. изначально — пусто.
+    const [currentUser, setCurrentUser] = useState(null);
 
-    const login = async (loginData) => {
-        try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', loginData);
-            setCurrentUser(response.data);
-            return { success: true };
-        } catch (error) {
-            console.error("Ошибка входа:", error);
-            return { success: false, message: error.response?.data || "Ошибка сервера" };
-        }
-    };
+    // функция для 'проверки документов' (входа).
+    const login = async (loginData) => {
+        try {
+            // отправляем запрос на сервер с логином и паролем.
+            const response = await axios.post('http://localhost:8080/api/auth/login', loginData);
+            // если проверка пройдена, записываем агента в currentUser.
+            setCurrentUser(response.data);
+            return { success: true };
+        } catch (error) {
+            // если нет — сообщаем об ошибке.
+            console.error("ошибка входа:", error);
+            return { success: false, message: error.response?.data || "ошибка сервера" };
+        }
+    };
 
-    const logout = () => {
-        setCurrentUser(null);
-    };
+    // функция 'сдачи смены' (выход). просто очищаем данные об агенте.
+    const logout = () => {
+        setCurrentUser(null);
+    };
 
-    const value = { currentUser, login, logout };
+    // собираем в один 'пакет' и данные агента, и функции для входа/выхода.
+    const value = { currentUser, login, logout };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
+    // делаем этот 'пакет' доступным для всех дочерних компонентов нашего приложения.
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
+// а это наш 'универсальный ключ' (хук) для любого компонента, 
+// которому нужен быстрый доступ к данным агента или функциям входа/выхода.
 export const useAuth = () => {
-    return useContext(AuthContext);
+    return useContext(AuthContext);
 };
