@@ -77,6 +77,7 @@ public class NoteService {
                 ))
                 .collect(Collectors.toList());
     }
+    @Transactional(readOnly = true)
     public List<NoteDto> getAllNotesForCurrentUser() {
         User currentUser = getCurrentUser();
 
