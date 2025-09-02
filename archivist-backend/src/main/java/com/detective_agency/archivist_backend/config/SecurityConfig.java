@@ -11,13 +11,23 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+
 @Configuration
-@EnableWebSecurity // Включаем нашу собственную конфигурацию безопасности
+@EnableWebSecurity
 public class SecurityConfig {
 
+    // ... бин PasswordEncoder остаётся без изменений
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // Этот бин нужен, чтобы мы могли использовать стандартный механизм аутентификации
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
@@ -25,10 +35,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register").permitAll()
+                        // Разрешаем доступ к регистрации и логину для ВСЕХ
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Для всех остальных запросов требуем аутентификацию
                         .anyRequest().authenticated()
-                )
-                .httpBasic(withDefaults()); // <-- ВОТ ЭТА СТРОЧКА
+                );
+        // .httpBasic(withDefaults()); // Basic Auth нам больше не нужен для браузера
 
         return http.build();
     }
