@@ -27,7 +27,6 @@ public class User implements UserDetails { // <-- Реализуем интер�
     @Column(name="Password", length = 64, nullable=false)
     private String passwordHash;
 
-    // --- Добавляем методы, которые требует UserDetails ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

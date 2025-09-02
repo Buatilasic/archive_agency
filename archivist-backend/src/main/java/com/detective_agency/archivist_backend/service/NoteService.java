@@ -18,54 +18,61 @@ import java.util.stream.Collectors;
 
 import static com.detective_agency.archivist_backend.utils.SecurityUtils.getCurrentUser;
 
+// этот сервис управляет заметками и уликами внутри конкретного дела.
 @Service("ns")
 public class NoteService {
 
+    // прямой доступ к хранилищу заметок.
     @Autowired
     private NoteRepository noteRepository;
 
+    // нужен, чтобы связывать заметки с их делами.
     @Autowired
-    private CaseRepository caseRepository; // Нам нужен доступ и к репозиторию "дел"
+    private CaseRepository caseRepository;
 
+    // создаём новую заметку и прикрепляем её к делу.
     public Note createNoteForCase(long caseId, NoteCreateRequestDto noteDto) {
         User currentUser = getCurrentUser();
 
+        // сначала находим дело, к которому относится заметка.
         Case aCase = caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Дело с id " + caseId + " не найдено!"));
+                .orElseThrow(() -> new RuntimeException("дело с id " + caseId + " не найдено!"));
 
+        // важная проверка: убеждаемся, что пользователь — владелец этого дела.
         if (!aCase.getCaseowner().equals(currentUser)) {
-            throw new SecurityException("Доступ запрещён: вы не являетесь владельцем этого дела.");
+            throw new SecurityException("доступ запрещён: вы не являетесь владельцем этого дела.");
         }
 
+        // создаём саму заметку и наполняем её данными.
         Note newNote = new Note();
         newNote.setTitle(noteDto.getTitle());
         newNote.setDescription(noteDto.getDescription());
         newNote.setType(noteDto.getType());
-        newNote.setACase(aCase); // Устанавливаем связь с делом
+        // устанавливаем связь с родительским делом.
+        newNote.setACase(aCase);
 
+        // сохраняем заметку в базу.
         return noteRepository.save(newNote);
     }
 
-    /**
-     * Возвращает все заметки для дела с указанным caseId.
-     */
+    // получаем все заметки для указанного дела.
     @Transactional(readOnly = true)
     public List<NoteDto> getNotesForCase(long caseId) {
         User currentUser = getCurrentUser();
         Case aCase = caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Дело с id " + caseId + " не найдено!"));
+                .orElseThrow(() -> new RuntimeException("дело с id " + caseId + " не найдено!"));
 
-        // Снова ПРОВЕРКА ВЛАДЕНИЯ: Показываем заметки, только если агент - владелец дела
+        // снова проверка: показываем заметки, только если пользователь владеет делом.
         if (!aCase.getCaseowner().equals(currentUser)) {
-            throw new SecurityException("Доступ запрещён.");
+            throw new SecurityException("доступ запрещён.");
         }
 
-        // Находим все заметки, связанные с этим делом, и преобразуем их в DTO
+        // находим все заметки, связанные с этим делом, и преобразуем их в dto.
         return noteRepository.findByACase(aCase)
                 .stream()
                 .map(note -> new NoteDto(
                         note.getId(),
-                        note.getTitle(), // Используем getTitle()
+                        note.getTitle(),
                         note.getDescription(),
                         note.getType(),
                         note.getACase().getCasename()
