@@ -1,56 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import './NoteList.css'; // <-- 1. Импортируем файл со стилями
 
-// компонент для просмотра 'личного архива' — всех заметок текущего агента.
 const NoteList = () => {
-    // здесь будет храниться список всех найденных 'записей' (заметок).
-    const [notes, setNotes] = useState([]);
-    // узнаём, кто сейчас на смене (какой пользователь активен).
-    const { currentUser } = useAuth();
+    const [notes, setNotes] = useState([]);
+    const { currentUser } = useAuth();
 
-    // этот 'наблюдатель' следит за тем, кто сейчас в системе.
-    useEffect(() => {
-        // задача — сделать запрос в 'центральный архив' и получить все записи этого агента.
-        const fetchNotes = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/api/notes/my-notes', {
-                    withCredentials: true
-                });
-                // полученные данные подшиваем в наше локальное 'дело' (state).
-                setNotes(response.data);
-            } catch (error) {
-                console.error("не удалось загрузить заметки:", error);
-            }
-        };
+    useEffect(() => {
+        const fetchNotes = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/notes/my-notes');
+                setNotes(response.data);
+            } catch (error) {
+                console.error("Не удалось загрузить заметки:", error);
+            }
+        };
 
-        // отправляем запрос в архив, только если агент на смене.
-        if (currentUser) {
-            fetchNotes();
-        }
-        // он срабатывает каждый раз, когда агент 'заступает на смену' или 'уходит'.
-    }, [currentUser]);
+        if (currentUser) {
+            fetchNotes();
+        }
+    }, [currentUser]);
 
-    // отображаем найденные 'записи' в виде списка.
-    return (
-        <div>
-            <h2>Все ваши заметки</h2>
-            {/* если в личном архиве пусто, сообщаем об этом. */}
-            {notes.length === 0 ? (
-                <p>У вас пока нет заметок.</p>
-            ) : (
-                // если записи есть, выводим каждую на отдельном 'бланке'.
-                <ul>
-                    {notes.map(note => (
-                        <li key={note.id}>
-                            <strong>{note.title}</strong> (Дело: {note.caseCasename})
-                            <p>{note.description}</p>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
+    return (
+       // ...
+<div className="note-grid">
+    {notes.map(note => (
+        <div key={note.id} className="note-card">
+            {/* Блок с заголовком */}
+            <div>
+                <ReactMarkdown components={{ p: 'h3' }} remarkPlugins={[remarkGfm]}>
+                    {note.title}
+                </ReactMarkdown>
+                <small>(Дело: {note.caseCasename})</small>
+            </div>
+
+            {/* Блок с контентом */}
+            <div className="card-content">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {note.description}
+                </ReactMarkdown>
+            </div>
+
+            {/* НОВОЕ: "Подвал" карточки с типом заметки */}
+            <div className="note-footer">
+                <span className="note-type-badge">{note.type}</span>
+            </div>
+        </div>
+    ))}
+</div>
+// ...
+    );
 };
 
 export default NoteList;

@@ -36,3 +36,56 @@
     transform: rotate(360deg);
   }
 }
+
+/* === Стили для навигации и кнопок меню === */
+
+/* Контейнер для кнопок на главной панели */
+.dashboard-nav {
+  display: flex;
+  gap: 15px; /* Пространство между кнопками */
+  justify-content: center; /* Центрируем кнопки */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Общий стиль для кнопок */
+.btn {
+  background-color: #4a5568; /* Цвет фона в тон карточкам */
+  color: #e2e8f0; /* Светлый текст */
+  border: none;
+  border-radius: 8px; /* Скруглённые углы */
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-transform: uppercase; /* Заглавные буквы */
+  letter-spacing: 0.5px;
+}
+
+/* Эффект при наведении */
+.btn:hover {
+  background-color: #5a6578;
+  transform: translateY(-2px); /* Небольшой "подъём" */
+}
+
+/* Стиль для второстепенных кнопок, как "Назад" или "Выйти" */
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid #4a5568;
+  color: #a0aec0;
+}
+
+.btn-secondary:hover {
+  background-color: #4a5568;
+  color: #e2e8f0;
+}
+
+/* Стили для контейнера формы */
+.form-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #2d3748; /* Фон как у карточек */
+    border-radius: 8px;
+    border: 1px solid #4a5568;
+}

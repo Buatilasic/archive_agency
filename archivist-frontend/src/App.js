@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Navigation from './components/Navigation';
 import { useAuth } from './context/AuthContext';
 import LoginForm from './components/LoginForm';
 import RegistrationForm from './components/RegistrationForm';
@@ -9,56 +10,60 @@ import './App.css';
 
 function App() {
   const { currentUser, logout } = useAuth();
-  const [view, setView] = useState('dashboard'); // 'dashboard', 'addCase', 'addNote', 'viewNotes'
+  const [view, setView] = useState('dashboard');
 
   if (!currentUser) {
+    // Формы входа и регистрации можно оставить как есть или тоже обернуть
+    // в .form-container для консистентности
     return (
         <div className="App">
             <header className="App-header">
                 <h1>Архив Детективного Агентства</h1>
-                <LoginForm />
+                <div className="form-container">
+                    <LoginForm />
+                </div>
                 <hr />
-                <RegistrationForm />
+                <div className="form-container">
+                    <RegistrationForm />
+                </div>
             </header>
         </div>
     );
   }
 
+  // Функция для рендера контента в зависимости от view
+  const renderContent = () => {
+    switch (view) {
+      case 'addCase':
+        return <div className="form-container"><CaseForm onCaseAdded={() => setView('dashboard')} /></div>;
+      case 'addNote':
+        return <div className="form-container"><NoteForm onNoteAdded={() => setView('viewNotes')} /></div>;
+      case 'viewNotes':
+        return <NoteList />;
+      default:
+        // Можно добавить приветственное сообщение на dashboard
+        return <h2 style={{color: '#a0aec0'}}>Выберите действие</h2>;
+    }
+  };
+
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Архив Детективного Агентства</h1>
-        <p>Добро пожаловать, агент {currentUser.username}! <button onClick={logout}>Выйти</button></p>
+        <p>
+            Добро пожаловать, агент {currentUser.username}!
+            {/* Добавляем классы кнопке выхода */}
+            <button onClick={logout} className="btn btn-secondary" style={{marginLeft: '15px'}}>Выйти</button>
+        </p>
         <hr />
-        
-        {view === 'dashboard' && (
-          <div>
-            <button onClick={() => setView('addCase')}>Создать дело</button> {/* <-- Новая кнопка */}
-            <button onClick={() => setView('addNote')}>Добавить заметку</button>
-            <button onClick={() => setView('viewNotes')}>Все заметки</button>
-          </div>
-        )}
 
-        {view === 'addCase' && (
-          <div>
-            <CaseForm onCaseAdded={() => setView('dashboard')} />
-            <button onClick={() => setView('dashboard')}>Назад</button>
-          </div>
-        )}
+        <Navigation view={view} setView={setView} />
 
-        {view === 'addNote' && (
-          <div>
-            <NoteForm onNoteAdded={() => setView('viewNotes')} />
-            <button onClick={() => setView('dashboard')}>Назад</button>
-          </div>
-        )}
-
-        {view === 'viewNotes' && (
-          <div>
-            <NoteList />
-            <button onClick={() => setView('dashboard')}>Назад</button>
-          </div>
-        )}
+        {/* Рендерим основной контент */}
+        <div className="main-content">
+            {renderContent()}
+        </div>
 
       </header>
     </div>
